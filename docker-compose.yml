@@ -1,0 +1,16 @@
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:latest
+    ports:
+      - '5432:5432'
+    volumes:
+      - /Users/nhatpham/data/postgres:/Users/nhatpham/data/postgres
+    env_file:
+      - .env
+    networks:
+      - postgres
+
+networks:
+  postgres:
+    driver: bridge
