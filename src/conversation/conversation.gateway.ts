@@ -12,12 +12,12 @@ import { Server, Socket } from 'socket.io';
 export class ConversationGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  afterInit(_server: any) {
-    throw new Error('Method not implemented.');
-  }
   @WebSocketServer() server: Server;
 
+  afterInit() {
+    // You can leave this empty if you don't need any initialization logic
+    console.log('WebSocket initialized');
+  }
   handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
   }
