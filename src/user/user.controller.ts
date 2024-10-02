@@ -14,4 +14,9 @@ export class UserController {
   async createUser(@Body() body: { name: string; email: string }) {
     return this.userService.createUser(body.name, body.email);
   }
+
+  @Post('login')
+  async login(@Body() body: { email: string }) {
+    return this.userService.login(body.email);
+  }
 }

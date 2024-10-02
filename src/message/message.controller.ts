@@ -1,4 +1,11 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Param,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { MessageService } from './message.service';
 
 @Controller('messages')
@@ -14,5 +21,9 @@ export class MessageController {
       body.conversationId,
       body.content,
     );
+  }
+  @Get(':userId')
+  async getMessages(@Param('userId', ParseIntPipe) userId: number) {
+    return this.messageService.getMessages(userId);
   }
 }

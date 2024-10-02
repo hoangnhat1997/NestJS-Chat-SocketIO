@@ -17,4 +17,11 @@ export class UserService {
       },
     });
   }
+  async login(email: string) {
+    return this.prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+  }
 }

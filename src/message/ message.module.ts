@@ -6,5 +6,6 @@ import { PrismaService } from '../prisma/prisma.service';
 @Module({
   controllers: [MessageController],
   providers: [MessageService, PrismaService],
+  exports: [MessageService],
 })
 export class MessageModule {}
