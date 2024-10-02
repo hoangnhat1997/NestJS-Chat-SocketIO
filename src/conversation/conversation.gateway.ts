@@ -8,23 +8,19 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { MessageService } from '../message/message.service';
-// import { NotFoundException } from '@nestjs/common';
-import { ConversationService } from './conversation.service';
 
 @WebSocketGateway({ cors: true })
 export class ConversationGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   @WebSocketServer() server: Server;
-  constructor(
-    private messageService: MessageService,
 
-    private conversationService: ConversationService,
-  ) {}
+  constructor(private messageService: MessageService) {}
 
   afterInit() {
     console.log('WebSocket initialized');
   }
+
   handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
   }
@@ -33,34 +29,25 @@ export class ConversationGateway
     console.log(`Client disconnected: ${client.id}`);
   }
 
+  @SubscribeMessage('joinRoom')
+  handleJoinRoom(client: Socket, conversationId: number) {
+    client.join(conversationId.toString()); // Join the room with conversationId as room name
+    console.log(`Client ${client.id} joined room ${conversationId}`);
+  }
+
   @SubscribeMessage('message')
   async handleMessage(
     client: Socket,
     payload: { senderId: number; conversationId: number; content: string },
   ) {
-    try {
-      await this.messageService.sendMessage(
-        payload.senderId,
-        payload.conversationId,
-        payload.content,
-      );
-    } catch (error) {
-      // if (error instanceof NotFoundException) {
-      //   console.log(
-      //     `Creating a new conversation with ID ${payload.conversationId}`,
-      //   );
-      //   const newConversation =
-      //     await this.conversationService.createConversation([
-      //       payload.conversationId,
-      //     ]);
-      //   await this.messageService.sendMessage(
-      //     payload.senderId,
-      //     newConversation.id,
-      //     payload.content,
-      //   );
-      // } else {
-      //   throw error;
-      // }
-    }
+    // Save the message to the database using MessageService
+    const message = await this.messageService.sendMessage(
+      payload.senderId,
+      payload.conversationId,
+      payload.content,
+    );
+
+    // Broadcast the message to all clients in the conversation room
+    this.server.to(payload.conversationId.toString()).emit('message', message); // Send the message to all clients in the room
   }
 }
