@@ -6,7 +6,9 @@ export class ConversationController {
   constructor(private conversationService: ConversationService) {}
 
   @Post()
-  async createConversation(@Body() body: { user1Id: number; user2Id: number }) {
+  async getOrCreateConversation(
+    @Body() body: { user1Id: number; user2Id: number },
+  ) {
     return this.conversationService.getOrCreateConversation(
       body.user1Id,
       body.user2Id,
