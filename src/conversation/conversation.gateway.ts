@@ -8,6 +8,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { MessageService } from '../message/message.service';
+import { ConversationService } from './conversation.service';
 
 @WebSocketGateway({ cors: true })
 export class ConversationGateway
@@ -15,7 +16,10 @@ export class ConversationGateway
 {
   @WebSocketServer() server: Server;
 
-  constructor(private messageService: MessageService) {}
+  constructor(
+    private messageService: MessageService,
+    private conversationService: ConversationService,
+  ) {}
 
   afterInit() {
     console.log('WebSocket initialized');
@@ -30,24 +34,48 @@ export class ConversationGateway
   }
 
   @SubscribeMessage('joinRoom')
-  handleJoinRoom(client: Socket, conversationId: number) {
-    client.join(conversationId.toString()); // Join the room with conversationId as room name
-    console.log(`Client ${client.id} joined room ${conversationId}`);
+  async handleJoinRoom(
+    client: Socket,
+    payload: { senderId: number; recipientId: number },
+  ) {
+    try {
+      const conversation =
+        await this.conversationService.getOrCreateConversation(
+          payload.senderId,
+          payload.recipientId,
+        );
+
+      // Ensure the conversation exists before joining the room
+      if (!conversation || !conversation.id) {
+        throw new Error('Failed to create or find a valid conversation');
+      }
+
+      // Join the room using the conversation ID as the room name
+      client.join(`room-${conversation.id}`);
+      console.log(`User ${payload.senderId} joined room-${conversation.id}`);
+    } catch (error) {
+      console.error('Error in handleJoinRoom:', error.message);
+    }
   }
 
   @SubscribeMessage('message')
   async handleMessage(
     client: Socket,
-    payload: { senderId: number; conversationId: number; content: string },
+    payload: { senderId: number; recipientId: number; content: string },
   ) {
     // Save the message to the database using MessageService
     const message = await this.messageService.sendMessage(
       payload.senderId,
-      payload.conversationId,
+      payload.recipientId,
       payload.content,
     );
 
-    // Broadcast the message to all clients in the conversation room
-    this.server.to(payload.conversationId.toString()).emit('message', message); // Send the message to all clients in the room
+    const conversation = await this.conversationService.getOrCreateConversation(
+      payload.senderId,
+      payload.recipientId,
+    );
+
+    // Broadcast the message to the specific room
+    this.server.to(`room-${conversation.id}`).emit('message', message);
   }
 }

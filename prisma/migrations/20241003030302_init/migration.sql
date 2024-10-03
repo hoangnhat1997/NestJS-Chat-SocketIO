@@ -3,6 +3,7 @@ CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -10,6 +11,7 @@ CREATE TABLE "User" (
 -- CreateTable
 CREATE TABLE "Conversation" (
     "id" SERIAL NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Conversation_pkey" PRIMARY KEY ("id")
 );
@@ -18,9 +20,9 @@ CREATE TABLE "Conversation" (
 CREATE TABLE "Message" (
     "id" SERIAL NOT NULL,
     "content" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "senderId" INTEGER NOT NULL,
     "conversationId" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Message_pkey" PRIMARY KEY ("id")
 );

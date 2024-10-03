@@ -22,8 +22,10 @@ export class MessageController {
       body.content,
     );
   }
-  @Get(':userId')
-  async getMessages(@Param('userId', ParseIntPipe) userId: number) {
-    return this.messageService.getMessages(userId);
+  @Get(':conversationId')
+  async getMessages(
+    @Param('conversationId', ParseIntPipe) conversationId: number,
+  ) {
+    return this.messageService.getMessages(conversationId);
   }
 }

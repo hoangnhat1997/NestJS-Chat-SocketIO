@@ -1,39 +1,34 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { ConversationService } from 'src/conversation/conversation.service';
 
 @Injectable()
 export class MessageService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private conversationService: ConversationService,
+  ) {}
 
-  async sendMessage(senderId: number, conversationId: number, content: string) {
-    const conversation = await this.prisma.conversation.findUnique({
-      where: { id: conversationId },
-    });
-
-    if (!conversation) {
-      throw new NotFoundException(
-        `Conversation with id ${conversationId} not found`,
-      );
-    }
+  async sendMessage(senderId: number, recipientId: number, content: string) {
+    const conversation = await this.conversationService.getOrCreateConversation(
+      senderId,
+      recipientId,
+    );
 
     return this.prisma.message.create({
       data: {
         senderId: senderId,
-        conversationId: conversationId,
+        conversationId: conversation.id,
         content: content,
       },
     });
   }
 
-  async getMessages(userId: number) {
+  async getMessages(conversationId: number) {
     return this.prisma.message.findMany({
       where: {
         conversation: {
-          participants: {
-            some: {
-              id: userId,
-            },
-          },
+          id: conversationId,
         },
       },
       include: {

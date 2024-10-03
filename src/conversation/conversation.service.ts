@@ -5,14 +5,33 @@ import { PrismaService } from '../prisma/prisma.service';
 export class ConversationService {
   constructor(private prisma: PrismaService) {}
 
-  async createConversation(participants: number[]) {
-    return this.prisma.conversation.create({
-      data: {
-        participants: {
-          connect: participants.map((id) => ({ id })),
+  // Method to get or create a conversation
+  async getOrCreateConversation(user1Id: number, user2Id: number) {
+    // Check if a conversation between the two users already exists
+    if (user1Id !== undefined && user2Id !== undefined) {
+      let conversation = await this.prisma.conversation.findFirst({
+        where: {
+          participants: {
+            every: {
+              id: { in: [user1Id, user2Id] },
+            },
+          },
         },
-      },
-    });
+      });
+
+      // If no conversation exists, create one
+      if (!conversation) {
+        conversation = await this.prisma.conversation.create({
+          data: {
+            participants: {
+              connect: [{ id: user1Id }, { id: user2Id }],
+            },
+          },
+        });
+      }
+
+      return conversation;
+    }
   }
 
   async getConversationsByUser(userId: number) {

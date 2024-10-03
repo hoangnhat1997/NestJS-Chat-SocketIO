@@ -19,20 +19,22 @@ model User {
   email         String         @unique
   conversations Conversation[] @relation("UserConversations")
   sentMessages  Message[]      @relation("UserMessages")
+  createdAt     DateTime       @default(now())
 }
 
 model Conversation {
   id            Int       @id @default(autoincrement())
   participants  User[]    @relation("UserConversations")
   messages      Message[]
+  createdAt     DateTime  @default(now())
 }
 
 model Message {
   id             Int          @id @default(autoincrement())
   content        String
-  createdAt      DateTime     @default(now())
   senderId       Int
   sender         User         @relation("UserMessages", fields: [senderId], references: [id])
   conversationId Int
   conversation   Conversation @relation(fields: [conversationId], references: [id])
+  createdAt      DateTime     @default(now())
 }
