@@ -52,7 +52,7 @@ export class ConversationGateway
   handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
     this.clientList[client.id] = client;
-    // @nhancv 3/30/20: Send client id to client
+    // Send client id to client
     client.emit(CLIENT_ID_EVENT, client.id);
   }
 
