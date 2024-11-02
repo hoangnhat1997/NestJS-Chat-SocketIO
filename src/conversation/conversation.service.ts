@@ -19,7 +19,8 @@ export class ConversationService {
         },
       });
 
-      // If no conversation exists, create one
+      // If no conversation exists, create one iteam
+
       if (!conversation) {
         conversation = await this.prisma.conversation.create({
           data: {
